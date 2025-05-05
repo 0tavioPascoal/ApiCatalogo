@@ -15,9 +15,9 @@ namespace ApiCatalogo.Controllers;
         _context = context;
     }
 
-    [HttpGet]
-    public ActionResult<IEnumerable<Categoria>> GetCategorias() {
-        var categorias = _context.Categorias.ToList();
+    [HttpGet("produtos")]
+    public ActionResult<IEnumerable<Categoria>> GetCategoriaProdutos() {
+        var categorias = _context.Categorias.Include(p => p.Produtos).ToList();
 
         if(categorias == null) {
             return NotFound();
@@ -25,6 +25,19 @@ namespace ApiCatalogo.Controllers;
 
         return Ok(categorias);
     }
+    
+    [HttpGet]
+    public ActionResult<IEnumerable<Categoria>> GetCategorias() {
+        var categorias = _context.Categorias.AsNoTracking().ToList();
+
+        if(categorias == null) {
+            return NotFound();
+        }
+
+        return Ok(categorias);
+    }
+    
+    
 
     [HttpGet("{id:int}", Name = "ObterCategoria")]
     public ActionResult<Categoria> ObterPorId(int id) {

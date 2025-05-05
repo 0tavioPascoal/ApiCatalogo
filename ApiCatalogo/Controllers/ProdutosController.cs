@@ -1,6 +1,7 @@
 ﻿using ApiCatalogo.Context;
 using ApiCatalogo.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiCatalogo.Controllers;
@@ -16,19 +17,15 @@ public class ProdutosController: ControllerBase {
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<Produto>> Get() {
-        var produtos = _context.Produtos.ToList();
-
-        if(produtos == null) {
-            return NotFound();
-        }
-
-        return Ok(produtos);
+    public async Task<ActionResult<IEnumerable<Produto>>> Get() {
+        
+        return await _context.Produtos.AsNoTracking().ToListAsync();
     }
 
+   
     [HttpGet("{id:int}", Name = "ObterProduto")]
-    public ActionResult<Produto> Get(int id) {
-        var produto = _context.Produtos.FirstOrDefault(p => p.ProdutoId == id);
+    public async Task<ActionResult<Produto>> Get(int id) {
+        var produto = await _context.Produtos.FirstOrDefaultAsync(p => p.ProdutoId == id);
         if (produto == null) {
             return NotFound("Produto não Encontrado!");
         }
