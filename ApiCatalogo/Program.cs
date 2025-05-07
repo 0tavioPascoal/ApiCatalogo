@@ -1,6 +1,7 @@
 using ApiCatalogo.Context;
 using ApiCatalogo.Extensions;
 using ApiCatalogo.Filters;
+using ApiCatalogo.Repositories.Categoria;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,7 @@ builder.Services.AddControllers(options =>
     options.Filters.Add(typeof(ApiExceptionFilter));
 });
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.IgnoreNullValues = true);
+builder.Services.AddScoped<ICategoriaRepository, CategoiaRepository>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
