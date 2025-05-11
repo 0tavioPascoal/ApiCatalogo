@@ -1,10 +1,8 @@
-﻿namespace ApiCatalogo.Repositories.Categoria;
+﻿using ApiCatalogo.Repositories.Repository;
 
-public interface ICategoriaRepository
+namespace ApiCatalogo.Repositories.Categoria;
+
+public interface ICategoriaRepository : IRepository<Model.Categoria>
 {
-   IEnumerable<Model.Categoria> GetCategorias(); 
-   Model.Categoria GetCategoria(int id);
-   Model.Categoria CreateCategoria(Model.Categoria categoria); 
-   Model.Categoria UpdateCategoria(Model.Categoria categoria);
-   Model.Categoria DeleteCategoria(int id);
+
 }

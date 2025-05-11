@@ -1,6 +1,7 @@
 ﻿using ApiCatalogo.Context;
 using ApiCatalogo.Model;
 using ApiCatalogo.Repositories.Categoria;
+using ApiCatalogo.Repositories.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,7 +12,7 @@ namespace ApiCatalogo.Controllers;
     public class CategoriaController: ControllerBase {
         
 
-    private readonly ICategoriaRepository _repository;
+    private readonly IRepository<Categoria> _repository;
 
     public CategoriaController(ICategoriaRepository repository)
     {
@@ -21,13 +22,13 @@ namespace ApiCatalogo.Controllers;
     [HttpGet]
     public ActionResult<IEnumerable<Categoria>> GetCategorias()
     {
-        return Ok(_repository.GetCategorias());
+        return Ok(_repository.GetAll());
     }
     
     [HttpGet("{id:int}", Name = "ObterCategoria")]
     public ActionResult<Categoria> ObterPorId(int id) 
     {
-       return Ok(_repository.GetCategoria(id));
+       return Ok(_repository.Get(c => c.CategoriaId == id));
     }
 
     [HttpPost]
@@ -36,7 +37,7 @@ namespace ApiCatalogo.Controllers;
         if(categoria is null)
             return BadRequest("Por favor insira os dados corretamente da categoria");
         
-        var categoriaCriada = _repository.CreateCategoria(categoria);
+        var categoriaCriada = _repository.Create(categoria);
         return new CreatedAtRouteResult("Obtercategoria", new { id = categoriaCriada.CategoriaId }, categoriaCriada);
     }
 
@@ -46,20 +47,20 @@ namespace ApiCatalogo.Controllers;
             return BadRequest("Os ids não são iguais");
         }
 
-        return Ok(_repository.UpdateCategoria(categoria));
+        return Ok(_repository.Update(categoria));
 
     }
 
     [HttpDelete("{id:int}")]
     public ActionResult<Categoria> Deletar(int id)
     {
-        var categoria = _repository.GetCategoria(id); 
+        var categoria = _repository.Get(c => c.CategoriaId == id); 
 
         if (categoria == null) {
             return NotFound("categoria não Encontrada");
         }
 
-        return Ok(_repository.DeleteCategoria(id));
+        return Ok(_repository.Delete(categoria));
     }
 
 }
