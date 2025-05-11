@@ -32,8 +32,4 @@
     <None Remove="Repository\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Repositories\Produto\" />
-  </ItemGroup>
-
 </Project>
