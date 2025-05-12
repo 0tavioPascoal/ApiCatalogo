@@ -1,7 +1,10 @@
 ﻿using ApiCatalogo.Context;
+using ApiCatalogo.Dtos.Categoria;
+using ApiCatalogo.Dtos.Mappings;
 using ApiCatalogo.Model;
 using ApiCatalogo.Repositories.Categoria;
 using ApiCatalogo.Repositories.Repository;
+using ApiCatalogo.Repositories.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,55 +15,79 @@ namespace ApiCatalogo.Controllers;
     public class CategoriaController: ControllerBase {
         
 
-    private readonly IRepository<Categoria> _repository;
+    private readonly IUnitOfWork  _unitOfWork;
 
-    public CategoriaController(ICategoriaRepository repository)
+    public CategoriaController( IUnitOfWork unitOfWork)
     {
-        _repository = repository;
+        _unitOfWork = unitOfWork;
     }
     
     [HttpGet]
     public ActionResult<IEnumerable<Categoria>> GetCategorias()
     {
-        return Ok(_repository.GetAll());
+        var categoria = _unitOfWork.CategoriaRepository.GetAll();
+        var categoriasDto = categoria.ToCategoriaDtoList();
+        return Ok(categoriasDto);
     }
     
     [HttpGet("{id:int}", Name = "ObterCategoria")]
-    public ActionResult<Categoria> ObterPorId(int id) 
+    public ActionResult<CategoriaDto> ObterPorId(int id)
     {
-       return Ok(_repository.Get(c => c.CategoriaId == id));
+        var categoriaId = _unitOfWork.CategoriaRepository.Get(c => c.CategoriaId == id);
+        if(categoriaId is null)
+            return NotFound();
+
+        var categoriaDto = categoriaId.ToCategoriaDto();
+        
+       return Ok(categoriaDto);
+       
     }
 
     [HttpPost]
-    public ActionResult<Categoria> Criar(Categoria categoria)
+    public ActionResult<CategoriaDto> Criar(CategoriaDto categoriaDto)
     {
-        if(categoria is null)
+        if(categoriaDto is null)
             return BadRequest("Por favor insira os dados corretamente da categoria");
         
-        var categoriaCriada = _repository.Create(categoria);
-        return new CreatedAtRouteResult("Obtercategoria", new { id = categoriaCriada.CategoriaId }, categoriaCriada);
+        var categoria = categoriaDto.ToCategoria();
+        
+        var categoriaCriada = _unitOfWork.CategoriaRepository.Create(categoria);
+        _unitOfWork.Commit();
+        
+        var novaCategoriaDto = categoriaCriada.ToCategoriaDto();
+        return new CreatedAtRouteResult("Obtercategoria", new { id = novaCategoriaDto.CategoriaId }, novaCategoriaDto);
     }
 
     [HttpPut("{id:int}")]
-    public ActionResult<Categoria> Modificar(Categoria categoria, int id) {
-        if (id != categoria.CategoriaId) {
+    public ActionResult<CategoriaDto> Modificar(CategoriaDto categoriaDto, int id) {
+        if (id != categoriaDto.CategoriaId) {
             return BadRequest("Os ids não são iguais");
         }
+        
+        var categoria= categoriaDto.ToCategoria();
 
-        return Ok(_repository.Update(categoria));
+        _unitOfWork.CategoriaRepository.Update(categoria);
+        _unitOfWork.Commit();
+        
+        var categoriaResponse = categoria.ToCategoriaDto();
+        return Ok(categoriaResponse);
 
     }
 
     [HttpDelete("{id:int}")]
-    public ActionResult<Categoria> Deletar(int id)
+    public ActionResult<CategoriaDto> Deletar(int id)
     {
-        var categoria = _repository.Get(c => c.CategoriaId == id); 
+        var categoria = _unitOfWork.CategoriaRepository.Get(c => c.CategoriaId == id); 
 
         if (categoria == null) {
             return NotFound("categoria não Encontrada");
         }
 
-        return Ok(_repository.Delete(categoria));
+        _unitOfWork.CategoriaRepository.Delete(categoria);
+        _unitOfWork.Commit();
+        
+        var categoriaResponse = categoria.ToCategoriaDto();
+        return Ok(categoriaResponse);
     }
 
 }
