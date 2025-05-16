@@ -15,7 +15,7 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add(typeof(ApiExceptionFilter));
 });
-builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.IgnoreNullValues = true);
+builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.IgnoreNullValues = true).AddNewtonsoftJson();
 builder.Services.AddScoped<ICategoriaRepository, CategoiaRepository>();
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

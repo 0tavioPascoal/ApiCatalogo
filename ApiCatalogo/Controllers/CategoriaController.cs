@@ -2,6 +2,7 @@
 using ApiCatalogo.Dtos.Categoria;
 using ApiCatalogo.Dtos.Mappings;
 using ApiCatalogo.Model;
+using ApiCatalogo.Pagination;
 using ApiCatalogo.Repositories.Categoria;
 using ApiCatalogo.Repositories.Repository;
 using ApiCatalogo.Repositories.UnitOfWork;
@@ -22,6 +23,29 @@ namespace ApiCatalogo.Controllers;
         _unitOfWork = unitOfWork;
     }
     
+    [HttpGet("paginationCategory")]
+    public ActionResult<IEnumerable<CategoriaDto>> paginationCategory([FromQuery] CategoriaParameters parameters)
+    {
+        var categorias = _unitOfWork.CategoriaRepository.GetPagedListCategorias(parameters);
+        
+        
+        var metadata = new
+        {
+            categorias.TotalCount, 
+            categorias.PageSize, 
+            categorias.CurrentPage, 
+            categorias.TotalPages, 
+            categorias.HasNext,
+            categorias.HasPrevius
+        };
+        
+        Response.Headers.Add("X-Pagination",  System.Text.Json.JsonSerializer.Serialize(metadata));
+        
+        var categoriasDto = categorias.ToCategoriaDtoList();
+        
+        return Ok(categoriasDto);
+    }
+    
     [HttpGet]
     public ActionResult<IEnumerable<Categoria>> GetCategorias()
     {
@@ -31,8 +55,9 @@ namespace ApiCatalogo.Controllers;
     }
     
     [HttpGet("{id:int}", Name = "ObterCategoria")]
-    public ActionResult<CategoriaDto> ObterPorId(int id)
+    public ActionResult<CategoriaDto> ObterPorId(int id) 
     {
+        
         var categoriaId = _unitOfWork.CategoriaRepository.Get(c => c.CategoriaId == id);
         if(categoriaId is null)
             return NotFound();
