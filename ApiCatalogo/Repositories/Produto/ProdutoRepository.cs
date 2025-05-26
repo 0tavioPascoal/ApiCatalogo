@@ -12,24 +12,44 @@ public class ProdutoRepository :  Repository<Model.Produto>, IProdutoRepository
     public ProdutoRepository(AppDbContext context) : base(context)
     {
     }
-
-    public PagedList<Model.Produto> GetPagedList(ProdutosParameters parameters)
+    public async Task<PagedList<Model.Produto>> GetProdutosFilterAsync(FilterProdutos produtosFiltroParams)
     {
-        var produtos = GetAll().OrderBy(p => p.ProdutoId).AsQueryable();
-        return PagedList<Model.Produto>.ToPagedList(produtos, parameters.PageNumber, parameters.PageSize);
+        var produtos = await GetAllAsync();
+            
+        
+
+        if (produtosFiltroParams.Preco.HasValue && !string.IsNullOrEmpty(produtosFiltroParams.PrecoCriterio))
+        {
+            if (produtosFiltroParams.PrecoCriterio.Equals("maior", StringComparison.OrdinalIgnoreCase))
+            {
+                produtos = produtos.Where(p => p.Preco > produtosFiltroParams.Preco.Value).OrderBy(p => p.Preco);
+            }
+            else if (produtosFiltroParams.PrecoCriterio.Equals("menor", StringComparison.OrdinalIgnoreCase))
+            {
+                produtos = produtos.Where(p => p.Preco < produtosFiltroParams.Preco.Value).OrderBy(p => p.Preco);
+            }
+            else if (produtosFiltroParams.PrecoCriterio.Equals("igual", StringComparison.OrdinalIgnoreCase))
+            {
+                produtos = produtos.Where(p => p.Preco == produtosFiltroParams.Preco.Value).OrderBy(p => p.Preco);
+            }
+        }
+        var produtosFiltrados = PagedList<Model.Produto>.ToPagedList(produtos.AsQueryable(), produtosFiltroParams.PageNumber,
+            produtosFiltroParams.PageSize);
+        return produtosFiltrados;
     }
 
-    public IEnumerable<Model.Produto> GetProdutos(ProdutosParameters produtosParameters)
+    public async Task<PagedList<Model.Produto>> GetPagedListAsync(ProdutosParameters parameters)
     {
-        return GetAll()
-            .OrderBy(p => p.Nome)
-            .Skip(produtosParameters.PageNumber - 1 * produtosParameters.PageSize)
-            .Take(produtosParameters.PageSize)
-            .ToList();
+        var produtos = await GetAllAsync(); 
+        var produtosObtidos =   produtos.OrderBy(p => p.ProdutoId).AsQueryable();
+        
+        return PagedList<Model.Produto>.ToPagedList(produtosObtidos, parameters.PageNumber, parameters.PageSize);
     }
-
-    public IEnumerable<Model.Produto> GetProdutosPorCategoria(int id)
-    {
-        return GetAll().Where(c => c.CategoriaID ==id );
+    
+    public async Task<IEnumerable<Model.Produto>> GetProdutosPorCategoriaAsync(int id)
+    { 
+        var p = await GetAllAsync();
+        
+        return p.Where(c => c.CategoriaID ==id );
     }
 }

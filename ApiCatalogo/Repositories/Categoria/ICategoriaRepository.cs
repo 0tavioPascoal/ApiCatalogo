@@ -5,5 +5,7 @@ namespace ApiCatalogo.Repositories.Categoria;
 
 public interface ICategoriaRepository : IRepository<Model.Categoria>
 {
-    PagedList<Model.Categoria> GetPagedListCategorias(CategoriaParameters parameters);
+    
+    Task<PagedList<Model.Categoria>> GetCategoriaFilterAsync(FilterCategoria filter);
+    Task<PagedList<Model.Categoria>> GetPagedListCategoriasAsync(CategoriaParameters parameters);
 }
